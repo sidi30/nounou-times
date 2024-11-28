@@ -23,5 +23,19 @@ public class Child {
     @OneToMany(mappedBy = "child", cascade = CascadeType.ALL)
     private List<Schedule> schedules;
 
-    // Getters and Setters
+    @Column(nullable = false)
+    private String createdDate;
+
+    @Column(nullable = false)
+    private String updatedDate;
+
+    @PrePersist
+    public void prePersist() {
+        createdDate = updatedDate = String.valueOf(System.currentTimeMillis());
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedDate = String.valueOf(System.currentTimeMillis());
+    }
 }

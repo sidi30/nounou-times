@@ -24,5 +24,19 @@ public class Overtime {
     @Column(nullable = false)
     private boolean validated; // indicates if the overtime has been validated
 
-    // Getters and Setters
+    @Column(nullable = false)
+    private String createdDate;
+
+    @Column(nullable = false)
+    private String updatedDate;
+
+    @PrePersist
+    public void prePersist() {
+        createdDate = updatedDate = String.valueOf(System.currentTimeMillis());
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedDate = String.valueOf(System.currentTimeMillis());
+    }
 }

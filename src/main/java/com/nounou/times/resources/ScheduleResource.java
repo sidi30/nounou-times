@@ -59,4 +59,11 @@ public class ScheduleResource {
         }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
+
+    @GET
+    @Path("/hello")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello() {
+        return "Hello Ramzi";
+    }
 }

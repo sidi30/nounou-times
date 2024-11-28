@@ -22,10 +22,20 @@ public class Absence {
     private User nounou;
 
     @Column(nullable = false)
-    private LocalDate date;
+    private String reason;
 
     @Column(nullable = false)
-    private String reason; // E.g., "Holiday", "Sick", etc.
+    private String createdDate;
 
-    // Getters and Setters
-}
+    @Column(nullable = false)
+    private String updatedDate;
+
+    @PrePersist
+    public void prePersist() {
+        createdDate = updatedDate = String.valueOf(System.currentTimeMillis());
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedDate = String.valueOf(System.currentTimeMillis());
+    }}

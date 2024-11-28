@@ -18,7 +18,7 @@ public class Conflict {
     private Schedule schedule;
 
     @Column(nullable = false)
-    private String reason; // Reason for the conflict
+    private String reason;
 
     @Column(nullable = false)
     private LocalDateTime reportedAt;

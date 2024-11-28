@@ -31,11 +31,27 @@ public class User {
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Child> children;
+
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Schedule> schedules;
 
     @OneToMany(mappedBy = "nounou", cascade = CascadeType.ALL)
     private List<Schedule> workSchedules;
 
-    // Getters and Setters
+    @Column(nullable = false)
+    private String createdDate;
+
+    @Column(nullable = false)
+    private String updatedDate;
+
+    @PrePersist
+    public void prePersist() {
+        createdDate = updatedDate = String.valueOf(System.currentTimeMillis());
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedDate = String.valueOf(System.currentTimeMillis());
+    }
+
 }

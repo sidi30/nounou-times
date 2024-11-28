@@ -20,7 +20,6 @@ public class ScheduleRepository implements PanacheRepository<Schedule> {
         return list("parent.id = ?1 and nounou.id = ?2 and function('DATE_FORMAT', arrivalTime, '%Y-%m') = ?3", parentId, nounouId, month.toString());
     }
 
-    //findByParentIdNounouIdAndMonth
     public List<Schedule> findByParentIdNounouIdAndMonth(Long parentId, Long nounouId, LocalDate month) {
         return list("parent.id = ?1 and nounou.id = ?2 and function('DATE_FORMAT', arrivalTime, '%Y-%m') = ?3", parentId, nounouId, month.toString());
     }

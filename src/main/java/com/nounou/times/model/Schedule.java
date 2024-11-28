@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/* Represente la table des calendier de depot de l'enfant */
 @Entity
 @Data
 public class Schedule {

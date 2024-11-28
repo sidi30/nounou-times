@@ -14,4 +14,5 @@ public class ReportRepository implements PanacheRepository<Report> {
     public List<Report> findByParentId(Long parentId) {
         return list("user.id", parentId);
     }
+
 }
