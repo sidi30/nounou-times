@@ -25,7 +25,7 @@ public class AbsenceResource {
 
     @POST
     public Response createAbsence(Absence absence) {
-        Absence createdAbsence = absenceService.createAbsence(1L,1L, absence);
+        Absence createdAbsence = absenceService.createAbsence(1L,2L, absence);
         return Response.status(Response.Status.CREATED).entity(createdAbsence).build();
     }
 

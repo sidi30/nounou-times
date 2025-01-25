@@ -44,7 +44,6 @@ public class AbsenceService {
     public Absence updateAbsence(Long id, Absence absence) {
         Absence existingAbsence = absenceRepository.findById(id);
         if (existingAbsence != null) {
-            existingAbsence.setDate(absence.getDate());
             existingAbsence.setReason(absence.getReason());
             return existingAbsence;
         }
