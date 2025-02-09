@@ -1,6 +1,10 @@
 package com.nounou.times.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.security.jpa.Password;
+import io.quarkus.security.jpa.Roles;
+import io.quarkus.security.jpa.UserDefinition;
+import io.quarkus.security.jpa.Username;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,6 +14,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
+@UserDefinition
 public class Utilisateur extends PanacheEntity {
 
     @Column(nullable = false)
@@ -19,16 +24,19 @@ public class Utilisateur extends PanacheEntity {
     private String prenom;
 
     @Column(nullable = false, unique = true)
+    @Username
     private String email;
 
     @Column(nullable = false)
-    private String motDePasse; // Password field (hashed)
+    @Password
+    private String motDePasse;
 
     @Column(nullable = false)
-    private String civilite; // e.g., "Madame", "Monsieur"
+    private String civilite;
 
     @Column(nullable = false)
-    private String typeUtilisateur; // e.g., "Parent", "Nounou"
+    @Roles
+    private String typeUtilisateur; // "PARENT" ou "NOUNOU"
 
     @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL)
     private List<Evenement> evenements;

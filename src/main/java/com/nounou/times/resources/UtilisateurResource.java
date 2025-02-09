@@ -2,6 +2,8 @@ package com.nounou.times.resources;
 
 import com.nounou.times.model.Utilisateur;
 import com.nounou.times.services.UtilisateurService;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -18,12 +20,14 @@ public class UtilisateurResource {
     UtilisateurService utilisateurService;
 
     @GET
+    @RolesAllowed({"PARENT", "NOUNOU"})
     public List<Utilisateur> getAll() {
         return utilisateurService.findAll();
     }
 
     @GET
     @Path("/{id}")
+    @RolesAllowed({"PARENT", "NOUNOU"})
     public Response getById(@PathParam("id") Long id) {
         Utilisateur utilisateur = utilisateurService.findById(id);
         if (utilisateur == null) {
@@ -33,6 +37,7 @@ public class UtilisateurResource {
     }
 
     @POST
+    @PermitAll
     public Response create(Utilisateur utilisateur) {
         utilisateurService.save(utilisateur);
         return Response.status(Response.Status.CREATED).build();
@@ -40,17 +45,16 @@ public class UtilisateurResource {
 
     @PUT
     @Path("/{id}")
+    @RolesAllowed({"PARENT", "NOUNOU"})
     public Response update(@PathParam("id") Long id, Utilisateur utilisateur) {
-        Utilisateur existing = utilisateurService.findById(id);
-        if (existing == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+        utilisateur.id = id;
         utilisateurService.update(utilisateur);
         return Response.ok().build();
     }
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed({"PARENT", "NOUNOU"})
     public Response delete(@PathParam("id") Long id) {
         utilisateurService.delete(id);
         return Response.noContent().build();
@@ -58,20 +62,15 @@ public class UtilisateurResource {
 
     @POST
     @Path("/login")
+    @PermitAll
     public Response login(LoginRequest loginRequest) {
-        Utilisateur utilisateur = utilisateurService.login(loginRequest.getEmail(), loginRequest.getMotDePasse());
-        if (utilisateur == null) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Email ou mot de passe incorrect")
-                    .build();
-        }
-
-        String token = utilisateurService.generateToken(utilisateur);
-        return Response.ok(new LoginResponse(token, utilisateur)).build();
+        String token = utilisateurService.login(loginRequest.getEmail(), loginRequest.getMotDePasse());
+        return Response.ok(new LoginResponse(token)).build();
     }
 
     @POST
     @Path("/logout")
+    @RolesAllowed({"PARENT", "NOUNOU"})
     public Response logout(@HeaderParam("Authorization") String token) {
         if (token == null || token.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -113,11 +112,9 @@ public class UtilisateurResource {
 
     public static class LoginResponse {
         private String token;
-        private Utilisateur utilisateur;
 
-        public LoginResponse(String token, Utilisateur utilisateur) {
+        public LoginResponse(String token) {
             this.token = token;
-            this.utilisateur = utilisateur;
         }
 
         // Getters et setters
@@ -127,14 +124,6 @@ public class UtilisateurResource {
 
         public void setToken(String token) {
             this.token = token;
-        }
-
-        public Utilisateur getUtilisateur() {
-            return utilisateur;
-        }
-
-        public void setUtilisateur(Utilisateur utilisateur) {
-            this.utilisateur = utilisateur;
         }
     }
 }
