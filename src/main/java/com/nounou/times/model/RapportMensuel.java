@@ -1,19 +1,18 @@
 package com.nounou.times.model;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.YearMonth;
 
 @Entity
-@Data
-public class RapportMensuel {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, updatable = false)
-    private Long id;
+@Getter
+@Setter
+public class RapportMensuel extends PanacheEntity {
 
     @Column(nullable = false)
     private YearMonth mois;

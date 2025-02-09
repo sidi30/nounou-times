@@ -9,7 +9,7 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 
 @ApplicationScoped
-public class HeuresSupplementairesService {
+public class HeuresSupplementairesService  {
     @Inject
     HeuresSupplementairesRepository heuresSupplementairesRepository;
 

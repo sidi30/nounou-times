@@ -44,7 +44,6 @@ public class GardeResource {
         if (existing == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        garde.setId(id);
         gardeService.update(garde);
         return Response.ok().build();
     }

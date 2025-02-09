@@ -43,7 +43,6 @@ public class NounouResource {
         if (existing == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        nounou.setId(id);
         nounouService.update(nounou);
         return Response.ok().build();
     }

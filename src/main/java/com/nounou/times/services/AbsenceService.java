@@ -19,21 +19,23 @@ public class AbsenceService {
     }
 
     public List<Absence> findAll() {
-        return absenceRepository.findAll();
+        return absenceRepository.findAll().stream().toList();
     }
 
     @Transactional
     public void save(Absence absence) {
-        absenceRepository.save(absence);
+        Absence.persist(absence);
     }
 
     @Transactional
     public void update(Absence absence) {
-        absenceRepository.update(absence);
+        absenceRepository.persist(absence);
     }
 
+    // delete absence
     @Transactional
-    public void delete(Long id) {
+    public void delete(String id) {
         absenceRepository.delete(id);
     }
+
 }

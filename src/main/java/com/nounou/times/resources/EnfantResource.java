@@ -43,7 +43,6 @@ public class EnfantResource {
         if (existing == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        enfant.setId(id);
         enfantService.update(enfant);
         return Response.ok().build();
     }

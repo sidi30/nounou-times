@@ -1,19 +1,19 @@
 package com.nounou.times.model;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Data
-public class FicheDePaie {
+@Getter
+@Setter
+public class FicheDePaie extends PanacheEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, updatable = false)
-    private Long id;
 
     @Column(nullable = false)
     private LocalDate date;
@@ -22,7 +22,7 @@ public class FicheDePaie {
     private int heuresNormales;
 
     @Column(nullable = false)
-    private int heuresSupplémentaires;
+    private int heuresSupplementaires;
 
     @Column(nullable = false)
     private BigDecimal tauxHoraire;

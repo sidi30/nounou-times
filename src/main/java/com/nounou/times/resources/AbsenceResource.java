@@ -43,7 +43,6 @@ public class AbsenceResource {
         if (existing == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        absence.setId(id);
         absenceService.update(absence);
         return Response.ok().build();
     }
@@ -55,7 +54,7 @@ public class AbsenceResource {
         if (absence == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        absenceService.delete(id);
+        absenceService.delete(String.valueOf(id));
         return Response.noContent().build();
     }
 }

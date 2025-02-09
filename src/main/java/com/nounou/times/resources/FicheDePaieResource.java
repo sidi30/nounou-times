@@ -43,7 +43,6 @@ public class FicheDePaieResource {
         if (existing == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        ficheDePaie.setId(id);
         ficheDePaieService.update(ficheDePaie);
         return Response.ok().build();
     }

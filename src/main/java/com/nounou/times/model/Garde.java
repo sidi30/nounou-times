@@ -1,25 +1,24 @@
 package com.nounou.times.model;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
-@Data
-public class Garde {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, updatable = false)
-    private Long id;
+@Getter
+@Setter
+public class Garde extends PanacheEntity {
 
     @Column(nullable = false)
     private LocalDate date;
 
     @Column(nullable = false)
-    private LocalTime heureDébut;
+    private LocalTime heureDebut;
 
     @Column(nullable = false)
     private LocalTime heureFin;

@@ -44,7 +44,6 @@ public class HeuresSupplementairesResource {
         if (existing == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        heuresSupplementaires.setId(id);
         heuresSupplementairesService.update(heuresSupplementaires);
         return Response.ok().build();
     }

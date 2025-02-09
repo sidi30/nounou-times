@@ -46,7 +46,6 @@ public class UtilisateurResource {
         if (existing == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        utilisateur.setId(id);
         utilisateurService.update(utilisateur);
         return Response.ok().build();
     }

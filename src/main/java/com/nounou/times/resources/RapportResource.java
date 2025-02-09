@@ -43,7 +43,6 @@ public class RapportResource {
         if (existing == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        rapportMensuel.setId(id);
         rapportMensuelService.update(rapportMensuel);
         return Response.ok().build();
     }

@@ -44,7 +44,6 @@ public class EvenementResource {
         if (existing == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        evenement.setId(id);
         evenementService.update(evenement);
         return Response.ok().build();
     }
