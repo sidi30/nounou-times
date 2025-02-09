@@ -11,19 +11,25 @@ public class Absence {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false, updatable = false)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "child_id", nullable = false)
-    private Child child;
+    @Column(nullable = false)
+    private LocalDate dateDébut;
+
+    @Column(nullable = false)
+    private LocalDate dateFin;
+
+    @Column(nullable = false)
+    private String raison; // e.g., "Congé", "Maladie"
 
     @ManyToOne
     @JoinColumn(name = "nounou_id", nullable = false)
-    private User nounou;
+    private Nounou nounou;
 
-    @Column(nullable = false)
-    private String reason;
-
+    @ManyToOne
+    @JoinColumn(name = "remplacant_id")
+    private Nounou remplacant;
     @Column(nullable = false)
     private String createdDate;
 
