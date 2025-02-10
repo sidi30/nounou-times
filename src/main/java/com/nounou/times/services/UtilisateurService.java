@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
+import java.time.Duration;
 import java.util.List;
 
 @ApplicationScoped
@@ -62,15 +63,27 @@ public class UtilisateurService {
         utilisateurRepository.deleteById(id);
     }
 
-    public String login(String email, String motDePasse) {
+    public TokenService.TokenPair login(String email, String motDePasse) {
         Utilisateur utilisateur = utilisateurRepository.find("email", email).firstResult();
         if (utilisateur != null && BcryptUtil.matches(motDePasse, utilisateur.getMotDePasse())) {
-            return tokenService.generateToken(utilisateur);
+            return tokenService.generateTokens(utilisateur);
         }
         throw new WebApplicationException("Email ou mot de passe incorrect", Response.Status.UNAUTHORIZED);
     }
 
-    public String generateSocialToken(Utilisateur utilisateur) {
-        return tokenService.generateToken(utilisateur);
+    public TokenService.TokenPair generateSocialToken(Utilisateur utilisateur, Duration duration) {
+        return tokenService.generateTokens(utilisateur);
+    }
+
+    public boolean logout(String token) {
+        return tokenService.invalidateToken(token);
+    }
+
+    public Utilisateur authenticate(String email, String motDePasse) {
+        Utilisateur utilisateur = utilisateurRepository.find("email", email).firstResult();
+        if (utilisateur != null && BcryptUtil.matches(motDePasse, utilisateur.getMotDePasse())) {
+            return utilisateur;
+        }
+        throw new SecurityException("Email ou mot de passe incorrect");
     }
 }

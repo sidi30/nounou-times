@@ -1,6 +1,7 @@
 package com.nounou.times.resources;
 
 import com.nounou.times.model.Utilisateur;
+import com.nounou.times.security.TokenService;
 import com.nounou.times.services.UtilisateurService;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -64,8 +65,13 @@ public class UtilisateurResource {
     @Path("/login")
     @PermitAll
     public Response login(LoginRequest loginRequest) {
-        String token = utilisateurService.login(loginRequest.getEmail(), loginRequest.getMotDePasse());
-        return Response.ok(new LoginResponse(token)).build();
+        TokenService.TokenPair login = utilisateurService.login(loginRequest.getEmail(), loginRequest.getMotDePasse());
+        if (login == null) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Email ou mot de passe incorrect")
+                    .build();
+        }
+        return Response.ok(new LoginResponse(login.accessToken())).build();
     }
 
     @POST
