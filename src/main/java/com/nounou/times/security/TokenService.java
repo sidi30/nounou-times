@@ -3,10 +3,10 @@ package com.nounou.times.security;
 import com.nounou.times.model.Utilisateur;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
-import lombok.Getter;
+import jakarta.inject.Inject;
 import org.eclipse.microprofile.jwt.Claims;
-
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -14,11 +14,35 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
 public class TokenService {
-    private final ConcurrentHashMap<String, String> refreshTokens = new ConcurrentHashMap<>();
+    @Inject
+    KeyGenerator keyGenerator;
+
+    private final ConcurrentHashMap<String, RefreshTokenInfo> refreshTokens = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Long> invalidatedTokens = new ConcurrentHashMap<>();
 
     private static final Duration ACCESS_TOKEN_DURATION = Duration.ofMinutes(15);
     private static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(30);
+
+    public record RefreshTokenInfo(String email, Instant expirationTime) {}
+
+    public boolean isRefreshTokenValid(String refreshToken) {
+        RefreshTokenInfo info = refreshTokens.get(refreshToken);
+        if (info == null) {
+            return false;
+        }
+        
+        if (Instant.now().isAfter(info.expirationTime())) {
+            refreshTokens.remove(refreshToken);
+            return false;
+        }
+        
+        return true;
+    }
+
+    public String getUserEmailFromRefreshToken(String refreshToken) {
+        RefreshTokenInfo info = refreshTokens.get(refreshToken);
+        return info != null ? info.email() : null;
+    }
 
     public TokenPair generateTokens(Utilisateur utilisateur) {
         String accessToken = generateAccessToken(utilisateur);
@@ -26,31 +50,32 @@ public class TokenService {
         return new TokenPair(accessToken, refreshToken);
     }
 
-    public String generateAccessToken(Utilisateur utilisateur) {
-        Set<String> roles = new HashSet<>();
-        roles.add(utilisateur.getTypeUtilisateur());
-
-        return Jwt.issuer("nounou-times")
-                .subject(utilisateur.getEmail())
-                .groups(roles)
-                .claim(Claims.full_name, utilisateur.getNom() + " " + utilisateur.getPrenom())
-                .claim("id", utilisateur.id)
-                .expiresIn(ACCESS_TOKEN_DURATION)
-                .sign();
-    }
-
     private String generateRefreshToken(Utilisateur utilisateur) {
         String refreshToken = UUID.randomUUID().toString();
-        refreshTokens.put(refreshToken, utilisateur.getEmail());
+        refreshTokens.put(refreshToken, new RefreshTokenInfo(
+            utilisateur.getEmail(),
+            Instant.now().plus(REFRESH_TOKEN_DURATION)
+        ));
         return refreshToken;
     }
 
-    public boolean isRefreshTokenValid(String refreshToken) {
-        return refreshTokens.containsKey(refreshToken);
-    }
+    private String generateAccessToken(Utilisateur utilisateur) {
+        Set<String> groups = new HashSet<>();
+        groups.add(utilisateur.getTypeUtilisateur());
 
-    public String getUserEmailFromRefreshToken(String refreshToken) {
-        return refreshTokens.get(refreshToken);
+        return Jwt.claims()
+                .issuer("nounou-times")
+                .subject(utilisateur.getEmail())
+                .groups(groups)
+                .claim(Claims.full_name.name(), utilisateur.getNom() + " " + utilisateur.getPrenom())
+                .claim(Claims.email.name(), utilisateur.getEmail())
+                .claim("user_type", utilisateur.getTypeUtilisateur())
+                .claim("user_id", utilisateur.getId())
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plus(ACCESS_TOKEN_DURATION))
+                .jws()
+                .keyId("nounou-times-key")
+                .sign(keyGenerator.getPrivateKey());
     }
 
     public void invalidateRefreshToken(String refreshToken) {
@@ -75,21 +100,5 @@ public class TokenService {
         return true;
     }
 
-    public boolean invalidateToken(String token) {
-        if (refreshTokens.containsKey(token)) {
-            refreshTokens.remove(token);
-            return true;
-        }
-
-        if (invalidatedTokens.containsKey(token)) {
-            invalidatedTokens.remove(token);
-            return true;
-        }
-
-        return false;
-    }
-
-        public record TokenPair(String accessToken, String refreshToken) {
-
-    }
+    public record TokenPair(String accessToken, String refreshToken) {}
 }

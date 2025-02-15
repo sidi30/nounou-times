@@ -10,7 +10,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
-import java.time.Duration;
 import java.util.List;
 
 @ApplicationScoped
@@ -44,13 +43,12 @@ public class UtilisateurService {
 
     @Transactional
     public void update(Utilisateur utilisateur) {
-        Utilisateur existingUser = utilisateurRepository.findById(utilisateur.id);
+        Utilisateur existingUser = utilisateurRepository.findById(utilisateur.getId());
         if (existingUser == null) {
             throw new WebApplicationException("Utilisateur non trouvé", Response.Status.NOT_FOUND);
         }
 
-        // Ne mettre à jour le mot de passe que s'il a été modifié et qu'il ne s'agit pas d'un utilisateur Keycloak
-        if (!utilisateur.getMotDePasse().equals(existingUser.getMotDePasse()) 
+        if (!utilisateur.getMotDePasse().equals(existingUser.getMotDePasse())
             && !"KEYCLOAK_USER".equals(existingUser.getMotDePasse())) {
             utilisateur.setMotDePasse(BcryptUtil.bcryptHash(utilisateur.getMotDePasse()));
         }
@@ -71,19 +69,8 @@ public class UtilisateurService {
         throw new WebApplicationException("Email ou mot de passe incorrect", Response.Status.UNAUTHORIZED);
     }
 
-    public TokenService.TokenPair generateSocialToken(Utilisateur utilisateur, Duration duration) {
-        return tokenService.generateTokens(utilisateur);
-    }
-
     public boolean logout(String token) {
-        return tokenService.invalidateToken(token);
+        return tokenService.isAccessTokenInvalidated(token);
     }
 
-    public Utilisateur authenticate(String email, String motDePasse) {
-        Utilisateur utilisateur = utilisateurRepository.find("email", email).firstResult();
-        if (utilisateur != null && BcryptUtil.matches(motDePasse, utilisateur.getMotDePasse())) {
-            return utilisateur;
-        }
-        throw new SecurityException("Email ou mot de passe incorrect");
-    }
 }

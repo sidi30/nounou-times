@@ -30,15 +30,13 @@ public class AuthResponse {
         private String typeUtilisateur;
         private String photoUrl;
 
-        public UserInfo(Long id, String email, String nom, String prenom, 
-                       String civilite, String typeUtilisateur, String photoUrl) {
-            this.id = id;
+        public UserInfo( String email, String nom, String prenom,
+                       String civilite, String typeUtilisateur) {
             this.email = email;
             this.nom = nom;
             this.prenom = prenom;
             this.civilite = civilite;
             this.typeUtilisateur = typeUtilisateur;
-            this.photoUrl = photoUrl;
         }
 
         // Getters and Setters

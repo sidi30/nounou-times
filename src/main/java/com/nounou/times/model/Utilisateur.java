@@ -8,8 +8,6 @@ import io.quarkus.security.jpa.Username;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
@@ -18,6 +16,9 @@ import java.util.List;
 @Data
 @UserDefinition
 public class Utilisateur extends PanacheEntity {
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String nom;
@@ -40,6 +41,9 @@ public class Utilisateur extends PanacheEntity {
     @Roles
     private String typeUtilisateur; // "PARENT" ou "NOUNOU"
 
+    @Column(nullable = true)
+    private String authProvider;
+
     @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL)
     private List<Evenement> evenements;
 
@@ -51,4 +55,5 @@ public class Utilisateur extends PanacheEntity {
 
     @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL)
     private List<RapportMensuel> rapports;
+
 }

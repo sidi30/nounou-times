@@ -48,7 +48,7 @@ public class UtilisateurResource {
     @Path("/{id}")
     @RolesAllowed({"PARENT", "NOUNOU"})
     public Response update(@PathParam("id") Long id, Utilisateur utilisateur) {
-        utilisateur.id = id;
+        utilisateur.setId(id);
         utilisateurService.update(utilisateur);
         return Response.ok().build();
     }
@@ -59,19 +59,6 @@ public class UtilisateurResource {
     public Response delete(@PathParam("id") Long id) {
         utilisateurService.delete(id);
         return Response.noContent().build();
-    }
-
-    @POST
-    @Path("/login")
-    @PermitAll
-    public Response login(LoginRequest loginRequest) {
-        TokenService.TokenPair login = utilisateurService.login(loginRequest.getEmail(), loginRequest.getMotDePasse());
-        if (login == null) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Email ou mot de passe incorrect")
-                    .build();
-        }
-        return Response.ok(new LoginResponse(login.accessToken())).build();
     }
 
     @POST
@@ -90,46 +77,6 @@ public class UtilisateurResource {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity("Token invalide")
                     .build();
-        }
-    }
-
-    // Classes DTO pour le login
-    public static class LoginRequest {
-        private String email;
-        private String motDePasse;
-
-        // Getters et setters
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getMotDePasse() {
-            return motDePasse;
-        }
-
-        public void setMotDePasse(String motDePasse) {
-            this.motDePasse = motDePasse;
-        }
-    }
-
-    public static class LoginResponse {
-        private String token;
-
-        public LoginResponse(String token) {
-            this.token = token;
-        }
-
-        // Getters et setters
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
         }
     }
 }
