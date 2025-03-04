@@ -4,16 +4,24 @@ import com.nounou.times.model.Nounou;
 import com.nounou.times.model.Enfant;
 import com.nounou.times.model.Absence;
 import com.nounou.times.model.Garde;
+import com.nounou.times.model.Evenement;
+import com.nounou.times.model.Rapport;
+import com.nounou.times.model.FicheDePaie;
 import com.nounou.times.services.NounouService;
 import com.nounou.times.services.EnfantService;
 import com.nounou.times.services.AbsenceService;
 import com.nounou.times.services.GardeService;
+import com.nounou.times.services.EvenementService;
+import com.nounou.times.services.RapportService;
+import com.nounou.times.services.FicheDePaieService;
 import com.nounou.times.dto.*;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 @Path("/api/nounous")
@@ -31,6 +39,15 @@ public class NounouResource {
 
     @Inject
     GardeService gardeService;
+
+    @Inject
+    EvenementService evenementService;
+
+    @Inject
+    RapportService rapportService;
+
+    @Inject
+    FicheDePaieService ficheDePaieService;
 
     @POST
     @Path("/signup")
@@ -242,5 +259,192 @@ public class NounouResource {
             dateDebut != null ? LocalDate.parse(dateDebut) : null,
             dateFin != null ? LocalDate.parse(dateFin) : null);
         return Response.ok(absences).build();
+    }
+
+    @GET
+    @Path("/evenements")
+    public Response getEvenements(
+            @HeaderParam("Authorization") String token,
+            @QueryParam("debut") String dateDebut,
+            @QueryParam("fin") String dateFin) {
+        if (!nounouService.isValidToken(token)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                         .entity(new ErrorResponse("Token invalide"))
+                         .build();
+        }
+
+        Nounou nounou = nounouService.findByToken(token);
+        List<Evenement> evenements = evenementService.findByNounou(nounou.getId(),
+            dateDebut != null ? LocalDate.parse(dateDebut) : null,
+            dateFin != null ? LocalDate.parse(dateFin) : null);
+        return Response.ok(evenements).build();
+    }
+
+    @POST
+    @Path("/imprevus")
+    public Response signalerImprevu(@HeaderParam("Authorization") String token, ImprevisRequest request) {
+        if (!nounouService.isValidToken(token)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                         .entity(new ErrorResponse("Token invalide"))
+                         .build();
+        }
+
+        try {
+            Nounou nounou = nounouService.findByToken(token);
+            Evenement imprevu = evenementService.creerImprevu(nounou.getId(), request);
+            return Response.status(Response.Status.CREATED)
+                         .entity(imprevu)
+                         .build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                         .entity(new ErrorResponse(e.getMessage()))
+                         .build();
+        }
+    }
+
+    @PATCH
+    @Path("/evenements/{id}/accept")
+    public Response accepterEvenement(
+            @HeaderParam("Authorization") String token,
+            @PathParam("id") Long evenementId) {
+        if (!nounouService.isValidToken(token)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                         .entity(new ErrorResponse("Token invalide"))
+                         .build();
+        }
+
+        try {
+            Nounou nounou = nounouService.findByToken(token);
+            evenementService.accepterEvenement(nounou.getId(), evenementId);
+            return Response.ok(new SuccessResponse("Événement accepté")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                         .entity(new ErrorResponse(e.getMessage()))
+                         .build();
+        }
+    }
+
+    @PATCH
+    @Path("/evenements/{id}/refuse")
+    public Response refuserEvenement(
+            @HeaderParam("Authorization") String token,
+            @PathParam("id") Long evenementId) {
+        if (!nounouService.isValidToken(token)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                         .entity(new ErrorResponse("Token invalide"))
+                         .build();
+        }
+
+        try {
+            Nounou nounou = nounouService.findByToken(token);
+            evenementService.refuserEvenement(nounou.getId(), evenementId);
+            return Response.ok(new SuccessResponse("Événement refusé")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                         .entity(new ErrorResponse(e.getMessage()))
+                         .build();
+        }
+    }
+
+    @PATCH
+    @Path("/evenements/{id}/reprogrammer")
+    public Response reprogrammerEvenement(
+            @HeaderParam("Authorization") String token,
+            @PathParam("id") Long evenementId,
+            ReprogrammationRequest request) {
+        if (!nounouService.isValidToken(token)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                         .entity(new ErrorResponse("Token invalide"))
+                         .build();
+        }
+
+        try {
+            Nounou nounou = nounouService.findByToken(token);
+            evenementService.reprogrammerEvenement(nounou.getId(), evenementId, request);
+            return Response.ok(new SuccessResponse("Événement reprogrammé")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                         .entity(new ErrorResponse(e.getMessage()))
+                         .build();
+        }
+    }
+
+    @GET
+    @Path("/rapports")
+    public Response getRapports(
+            @HeaderParam("Authorization") String token,
+            @QueryParam("annee") Integer annee,
+            @QueryParam("mois") Integer mois) {
+        if (!nounouService.isValidToken(token)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                         .entity(new ErrorResponse("Token invalide"))
+                         .build();
+        }
+
+        try {
+            Nounou nounou = nounouService.findByToken(token);
+            YearMonth periode = YearMonth.of(
+                annee != null ? annee : YearMonth.now().getYear(),
+                mois != null ? mois : YearMonth.now().getMonthValue()
+            );
+            List<Rapport> rapports = rapportService.getRapportsMensuels(nounou.getId(), periode);
+            return Response.ok(rapports).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                         .entity(new ErrorResponse(e.getMessage()))
+                         .build();
+        }
+    }
+
+    @GET
+    @Path("/rapports/download")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadRapport(
+            @HeaderParam("Authorization") String token,
+            @QueryParam("rapportId") Long rapportId) {
+        if (!nounouService.isValidToken(token)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                         .entity(new ErrorResponse("Token invalide"))
+                         .build();
+        }
+
+        try {
+            Nounou nounou = nounouService.findByToken(token);
+            StreamingOutput fileStream = rapportService.downloadRapport(nounou.getId(), rapportId);
+            return Response.ok(fileStream)
+                         .header("Content-Disposition", "attachment; filename=rapport.pdf")
+                         .build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                         .entity(new ErrorResponse(e.getMessage()))
+                         .build();
+        }
+    }
+
+    @GET
+    @Path("/fiche-paie")
+    public Response getFichePaie(
+            @HeaderParam("Authorization") String token,
+            @QueryParam("annee") Integer annee,
+            @QueryParam("mois") Integer mois) {
+        if (!nounouService.isValidToken(token)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                         .entity(new ErrorResponse("Token invalide"))
+                         .build();
+        }
+
+        try {
+            Nounou nounou = nounouService.findByToken(token);
+            YearMonth periode = YearMonth.of(
+                annee != null ? annee : YearMonth.now().getYear(),
+                mois != null ? mois : YearMonth.now().getMonthValue()
+            );
+            FicheDePaie fichePaie = ficheDePaieService.genererOuRecuperer(nounou.getId(), periode);
+            return Response.ok(fichePaie).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                         .entity(new ErrorResponse(e.getMessage()))
+                         .build();
+        }
     }
 }
