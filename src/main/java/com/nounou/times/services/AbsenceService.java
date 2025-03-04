@@ -2,8 +2,6 @@ package com.nounou.times.services;
 
 import com.nounou.times.model.Absence;
 import com.nounou.times.repository.AbsenceRepository;
-import com.nounou.times.repository.EnfantRepository;
-import com.nounou.times.repository.UtilisateurRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
