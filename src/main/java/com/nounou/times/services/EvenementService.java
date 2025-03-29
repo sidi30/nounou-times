@@ -82,6 +82,7 @@ public class EvenementService {
         evenement.setCommentaire(request.getRaison());
         evenement.setStatut("REPROGRAMME");
         evenementRepository.update(evenement);
+
     }
 
     private Evenement verifierEvenement(Long nounouId, Long evenementId) {

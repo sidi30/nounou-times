@@ -5,7 +5,6 @@ import com.nounou.times.model.Enfant;
 import com.nounou.times.model.Absence;
 import com.nounou.times.model.Garde;
 import com.nounou.times.model.Evenement;
-import com.nounou.times.model.Rapport;
 import com.nounou.times.model.FicheDePaie;
 import com.nounou.times.services.NounouService;
 import com.nounou.times.services.EnfantService;

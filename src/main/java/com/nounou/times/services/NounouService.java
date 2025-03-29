@@ -103,6 +103,10 @@ public class NounouService {
         return null;
     }
 
+    public List<Nounou> getNounous(Long parentId) {
+        return Nounou.find("SELECT n FROM Nounou n JOIN n.enfants e WHERE e.parent.id = ?1", parentId).list();
+    }
+
     public String generateToken(Nounou nounou) {
         String token = UUID.randomUUID().toString();
         activeTokens.add(token);

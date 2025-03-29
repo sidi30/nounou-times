@@ -2,11 +2,9 @@ package com.nounou.times.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -14,10 +12,10 @@ import java.time.LocalDate;
 public class Absence extends PanacheEntity {
 
     @Column(nullable = false)
-    private LocalDate dateDebut;
+    private LocalDateTime dateDebut;
 
     @Column(nullable = false)
-    private LocalDate dateFin;
+    private LocalDateTime dateFin;
 
     @Column(nullable = false)
     private String raison; // e.g., "Congé", "Maladie"
@@ -29,6 +27,24 @@ public class Absence extends PanacheEntity {
     @ManyToOne
     @JoinColumn(name = "remplacant_id")
     private Nounou remplacant;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_id", nullable = false)
+    private Parent parent;
+
+    @ManyToOne
+    @JoinColumn(name = "enfant_id", nullable = false)
+    private Enfant enfant;
+
+    @Column(nullable = false)
+    private String statut; // PENDING, APPROVED, REJECTED
+
+    @Column(nullable = false)
+    private boolean justificatifFourni;
+
+    @Column
+    private String commentaire;
+
     @Column(nullable = false)
     private String createdDate;
 
@@ -43,4 +59,5 @@ public class Absence extends PanacheEntity {
     @PreUpdate
     public void preUpdate() {
         updatedDate = String.valueOf(System.currentTimeMillis());
-    }}
+    }
+}

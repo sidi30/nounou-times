@@ -15,6 +15,7 @@
         <quarkus.platform.version>3.13.2</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.2.5</surefire-plugin.version>
+        <apache.poi.version>5.2.5</apache.poi.version>
     </properties>
 
     <dependencyManagement>
@@ -83,6 +84,24 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-mailer</artifactId>
         </dependency>
+
+        <!-- Apache POI pour Excel -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>${apache.poi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${apache.poi.version}</version>
+        </dependency>
+    
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-elytron-security-common</artifactId>
+        <version>3.19.2</version>
+      </dependency>
     </dependencies>
 
     <build>

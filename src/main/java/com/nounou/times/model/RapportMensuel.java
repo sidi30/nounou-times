@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 
 @Entity
@@ -15,15 +16,24 @@ import java.time.YearMonth;
 public class RapportMensuel extends PanacheEntity {
 
     @Column(nullable = false)
-    private YearMonth mois;
+    private YearMonth periode;
 
     @Column(nullable = false)
-    private int heuresTotales;
+    private Long nombreGardes;
 
     @Column(nullable = false)
-    private BigDecimal montantTotal;
+    private Long nombreAbsences;
+
+    @Column(nullable = false)
+    private double heuresTotales;
+
+    @Column(nullable = false)
+    private double montantTotal;
+
+    @Column(nullable = false)
+    private LocalDate dateGeneration;
 
     @ManyToOne
-    @JoinColumn(name = "utilisateur_id", nullable = false)
-    private Utilisateur utilisateur;
+    @JoinColumn(name = "nounou_id", nullable = false)
+    private Nounou nounou;
 }
