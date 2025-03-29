@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -23,6 +24,9 @@ public class Garde extends PanacheEntity {
     @Column(nullable = false)
     private LocalTime heureFin;
 
+    private LocalDateTime heureDepotEffectif;
+    private LocalDateTime heureRepriseEffective;
+
     @ManyToOne
     @JoinColumn(name = "enfant_id", nullable = false)
     private Enfant enfant;
@@ -32,5 +36,13 @@ public class Garde extends PanacheEntity {
     private Nounou nounou;
 
     @Column(nullable = false)
-    private String status; // e.g., "Déposé", "Récupéré"
+    private String status; // PLANIFIE, EN_COURS, TERMINE
+    private String commentaire;
+    private boolean depotValide;
+    private boolean repriseValidee;
+    private boolean estImprevu;
+    public boolean isRepasInclus() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isRepasInclus'");
+    }
 }

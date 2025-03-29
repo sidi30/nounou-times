@@ -16,11 +16,14 @@ public class GardeResource {
     @Inject
     GardeService gardeService;
 
+
+    // get all Gardes
     @GET
     public List<Garde> getAll() {
         return gardeService.findAll();
     }
 
+    // get gardes by id
     @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id) {
@@ -31,10 +34,12 @@ public class GardeResource {
         return Response.ok(garde).build();
     }
 
+    // create a new garde
     @POST
     public Response create(Garde garde) {
-        gardeService.save(garde);
-        return Response.status(Response.Status.CREATED).build();
+        Garde planifier = gardeService.planifier
+                (garde.getNounou().id, garde.getEnfant().id, garde.getHeureDepotEffectif(), garde.getHeureRepriseEffective(), garde.isRepasInclus());
+        return Response.ok(planifier).status(Response.Status.CREATED).build();
     }
 
     @PUT

@@ -22,4 +22,9 @@ public class Enfant extends PanacheEntity {
     @ManyToOne
     @JoinColumn(name = "parent_id", nullable = false)
     private Utilisateur parent;
+
+    // Ajour de la relation avec la nounou
+    @ManyToOne
+    @JoinColumn(name = "nounou_id")
+    private Nounou nounou;
 }

@@ -13,10 +13,6 @@ import java.util.List;
 @Getter
 @Setter
 public class Nounou extends PanacheEntity {
-
-    @Id
-    @GeneratedValue
-    private Long id;
     
     @Column(nullable = false)
     private String nom;
