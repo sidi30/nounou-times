@@ -23,17 +23,6 @@ import org.apache.poi.ss.usermodel.*;
 
 @ApplicationScoped
 public class RapportService {
-    @Inject
-    RapportRepository rapportRepository;
-
-    @Inject
-    NounouRepository nounouRepository;
-
-    @Inject
-    GardeRepository gardeRepository;
-
-    @Inject
-    AbsenceRepository absenceRepository;
 
     public List<RapportMensuel> getRapportsMensuels(Long nounouId, YearMonth periode) {
         Nounou nounou = nounouRepository.findById(nounouId);

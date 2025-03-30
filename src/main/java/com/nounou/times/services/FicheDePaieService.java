@@ -16,14 +16,6 @@ import java.util.List;
 // Service: FicheDePaieService
 @ApplicationScoped
 public class FicheDePaieService {
-    @Inject
-    FicheDePaieRepository ficheDePaieRepository;
-
-    @Inject
-    NounouRepository nounouRepository;
-
-    @Inject
-    GardeRepository gardeRepository;
 
     public FicheDePaie findById(Long id) {
         return ficheDePaieRepository.findById(id);

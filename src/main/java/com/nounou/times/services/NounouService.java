@@ -20,8 +20,6 @@ import java.util.Base64;
 @ApplicationScoped
 public class NounouService {
 
-    @Inject
-    NounouRepository nounouRepository;
 
     private Set<String> activeTokens = new HashSet<>();
     private Map<String, Long> tokenToNounouId = new HashMap<>();

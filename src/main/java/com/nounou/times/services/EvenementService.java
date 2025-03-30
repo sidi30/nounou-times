@@ -17,14 +17,6 @@ import java.util.List;
 @ApplicationScoped
 public class EvenementService {
 
-    @Inject
-    EvenementRepository evenementRepository;
-
-    @Inject
-    NounouRepository nounouRepository;
-
-    @Inject
-    EnfantRepository enfantRepository;
 
     public List<Evenement> findByNounou(Long nounouId, LocalDate debut, LocalDate fin) {
         return evenementRepository.findByNounouAndDateRange(nounouId, debut, fin);

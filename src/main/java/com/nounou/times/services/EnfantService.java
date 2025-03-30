@@ -18,14 +18,6 @@ import java.util.UUID;
 
 @ApplicationScoped
 public class EnfantService {
-    @Inject
-    EnfantRepository enfantRepository;
-
-    @Inject
-    NounouRepository nounouRepository;
-
-    @Inject
-    ParentRepository parentRepository;
 
     @Inject
     Mailer mailer;

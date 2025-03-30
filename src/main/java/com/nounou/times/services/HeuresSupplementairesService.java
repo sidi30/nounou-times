@@ -1,7 +1,6 @@
 package com.nounou.times.services;
 
 import com.nounou.times.model.HeuresSupplementaires;
-import com.nounou.times.repository.HeuresSupplementairesRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -11,7 +10,6 @@ import java.util.List;
 @ApplicationScoped
 public class HeuresSupplementairesService  {
     @Inject
-    HeuresSupplementairesRepository heuresSupplementairesRepository;
 
     public HeuresSupplementaires findById(Long id) {
         return heuresSupplementairesRepository.findById(id);

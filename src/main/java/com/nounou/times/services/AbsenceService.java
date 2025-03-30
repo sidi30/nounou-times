@@ -3,11 +3,7 @@ package com.nounou.times.services;
 import com.nounou.times.model.Absence;
 import com.nounou.times.model.Nounou;
 import com.nounou.times.model.Enfant;
-import com.nounou.times.repository.AbsenceRepository;
-import com.nounou.times.repository.NounouRepository;
-import com.nounou.times.repository.EnfantRepository;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,14 +11,6 @@ import java.util.List;
 
 @ApplicationScoped
 public class AbsenceService {
-    @Inject
-    AbsenceRepository absenceRepository;
-
-    @Inject
-    NounouRepository nounouRepository;
-
-    @Inject
-    EnfantRepository enfantRepository;
 
     public List<Absence> getAbsences(Long nounouId, LocalDate debut, LocalDate fin) {
         return absenceRepository.findByNounouAndPeriode(nounouId, debut, fin);
