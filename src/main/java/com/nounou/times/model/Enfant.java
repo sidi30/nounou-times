@@ -2,7 +2,6 @@ package com.nounou.times.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +20,7 @@ public class Enfant extends PanacheEntity {
 
     @ManyToOne
     @JoinColumn(name = "parent_id", nullable = false)
-    private Utilisateur parent;
+    private Parent parent;
 
     // Ajour de la relation avec la nounou
     @ManyToOne

@@ -2,11 +2,11 @@ package com.nounou.times.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 
 @Entity
@@ -24,6 +24,6 @@ public class RapportMensuel extends PanacheEntity {
     private BigDecimal montantTotal;
 
     @ManyToOne
-    @JoinColumn(name = "utilisateur_id", nullable = false)
-    private Utilisateur utilisateur;
+    @JoinColumn(name = "parent_id", nullable = false)
+    private Parent parent;
 }

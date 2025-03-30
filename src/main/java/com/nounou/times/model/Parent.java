@@ -2,16 +2,16 @@ package com.nounou.times.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
-@Data
-public class Utilisateur extends PanacheEntity {
-
+@Getter
+@Setter
+public class Parent extends PanacheEntity {
+    
     @Column(nullable = false)
     private String nom;
 
@@ -22,16 +22,10 @@ public class Utilisateur extends PanacheEntity {
     private String email;
 
     @Column(nullable = false)
-    private String motDePasse; // Password field (hashed)
+    private String motDePasse;
 
     @Column(nullable = false)
-    private String civilite; // e.g., "Madame", "Monsieur"
-
-    @Column(nullable = false)
-    private String typeUtilisateur; // e.g., "Parent", "Nounou"
-
-    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL)
-    private List<Evenement> evenements;
+    private String civilite;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Enfant> enfants;
@@ -39,6 +33,9 @@ public class Utilisateur extends PanacheEntity {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Nounou> nounous;
 
-    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    private List<Evenement> evenements;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<RapportMensuel> rapports;
 }
