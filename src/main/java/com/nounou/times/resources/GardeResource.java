@@ -13,6 +13,7 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class GardeResource {
+
     @Inject
     GardeService gardeService;
 
@@ -24,11 +25,9 @@ public class GardeResource {
     @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id) {
-        Garde garde = gardeService.findById(id);
-        if (garde == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(garde).build();
+        return gardeService.findById(id)
+                .map(g -> Response.ok(g).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST
@@ -40,8 +39,7 @@ public class GardeResource {
     @PUT
     @Path("/{id}")
     public Response update(@PathParam("id") Long id, Garde garde) {
-        Garde existing = gardeService.findById(id);
-        if (existing == null) {
+        if (gardeService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         gardeService.update(garde);
@@ -51,12 +49,10 @@ public class GardeResource {
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
-        Garde garde = gardeService.findById(id);
-        if (garde == null) {
+        if (gardeService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         gardeService.delete(id);
         return Response.noContent().build();
     }
 }
-

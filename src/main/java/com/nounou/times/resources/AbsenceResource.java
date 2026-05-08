@@ -1,17 +1,19 @@
 package com.nounou.times.resources;
 
-
 import com.nounou.times.model.Absence;
 import com.nounou.times.services.AbsenceService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.util.List;
+
 @Path("/absences")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class AbsenceResource {
+
     @Inject
     AbsenceService absenceService;
 
@@ -23,11 +25,9 @@ public class AbsenceResource {
     @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id) {
-        Absence absence = absenceService.findById(id);
-        if (absence == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(absence).build();
+        return absenceService.findById(id)
+                .map(a -> Response.ok(a).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST
@@ -39,8 +39,7 @@ public class AbsenceResource {
     @PUT
     @Path("/{id}")
     public Response update(@PathParam("id") Long id, Absence absence) {
-        Absence existing = absenceService.findById(id);
-        if (existing == null) {
+        if (absenceService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         absenceService.update(absence);
@@ -50,11 +49,10 @@ public class AbsenceResource {
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
-        Absence absence = absenceService.findById(id);
-        if (absence == null) {
+        if (absenceService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        absenceService.delete(String.valueOf(id));
+        absenceService.delete(id);
         return Response.noContent().build();
     }
 }

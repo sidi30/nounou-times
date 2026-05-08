@@ -7,32 +7,34 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
-public class HeuresSupplementairesService  {
+public class HeuresSupplementairesService {
+
     @Inject
     HeuresSupplementairesRepository heuresSupplementairesRepository;
 
-    public HeuresSupplementaires findById(Long id) {
-        return heuresSupplementairesRepository.findById(id);
+    public Optional<HeuresSupplementaires> findById(Long id) {
+        return heuresSupplementairesRepository.findByIdOptional(id);
     }
 
     public List<HeuresSupplementaires> findAll() {
-        return heuresSupplementairesRepository.findAll();
+        return heuresSupplementairesRepository.listAll();
     }
 
     @Transactional
-    public void save(HeuresSupplementaires heuresSupplementaires) {
-        heuresSupplementairesRepository.save(heuresSupplementaires);
+    public void save(HeuresSupplementaires heures) {
+        heuresSupplementairesRepository.persist(heures);
     }
 
     @Transactional
-    public void update(HeuresSupplementaires heuresSupplementaires) {
-        heuresSupplementairesRepository.update(heuresSupplementaires);
+    public void update(HeuresSupplementaires heures) {
+        heuresSupplementairesRepository.getEntityManager().merge(heures);
     }
 
     @Transactional
     public void delete(Long id) {
-        heuresSupplementairesRepository.delete(id);
+        heuresSupplementairesRepository.deleteById(id);
     }
 }

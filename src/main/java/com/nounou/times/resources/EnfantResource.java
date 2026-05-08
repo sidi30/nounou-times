@@ -6,12 +6,14 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.util.List;
 
 @Path("/enfants")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EnfantResource {
+
     @Inject
     EnfantService enfantService;
 
@@ -23,11 +25,9 @@ public class EnfantResource {
     @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id) {
-        Enfant enfant = enfantService.findById(id);
-        if (enfant == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(enfant).build();
+        return enfantService.findById(id)
+                .map(e -> Response.ok(e).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST
@@ -39,8 +39,7 @@ public class EnfantResource {
     @PUT
     @Path("/{id}")
     public Response update(@PathParam("id") Long id, Enfant enfant) {
-        Enfant existing = enfantService.findById(id);
-        if (existing == null) {
+        if (enfantService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         enfantService.update(enfant);
@@ -50,8 +49,7 @@ public class EnfantResource {
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
-        Enfant enfant = enfantService.findById(id);
-        if (enfant == null) {
+        if (enfantService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         enfantService.delete(id);

@@ -1,12 +1,12 @@
 package com.nounou.times.model;
 
+import com.nounou.times.converter.YearMonthConverter;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 
 @Entity
@@ -15,15 +15,22 @@ import java.time.YearMonth;
 public class RapportMensuel extends PanacheEntity {
 
     @Column(nullable = false)
-    private YearMonth mois;
+    @Convert(converter = YearMonthConverter.class)
+    private YearMonth periode;
 
-    @Column(nullable = false)
-    private int heuresTotales;
+    @Column
+    private LocalDate dateGeneration;
 
-    @Column(nullable = false)
-    private BigDecimal montantTotal;
+    @Column
+    private Long nombreGardes;
+
+    @Column
+    private Long nombreAbsences;
+
+    @Column
+    private Double heuresTotales;
 
     @ManyToOne
-    @JoinColumn(name = "utilisateur_id", nullable = false)
-    private Utilisateur utilisateur;
+    @JoinColumn(name = "nounou_id", nullable = false)
+    private Nounou nounou;
 }

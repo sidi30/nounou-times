@@ -1,15 +1,16 @@
 package com.nounou.times.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
-@Data
+@Getter
+@Setter
 public class Utilisateur extends PanacheEntity {
 
     @Column(nullable = false)
@@ -22,23 +23,20 @@ public class Utilisateur extends PanacheEntity {
     private String email;
 
     @Column(nullable = false)
-    private String motDePasse; // Password field (hashed)
+    @JsonIgnore
+    private String motDePasse;
 
     @Column(nullable = false)
-    private String civilite; // e.g., "Madame", "Monsieur"
+    private String civilite;
 
     @Column(nullable = false)
-    private String typeUtilisateur; // e.g., "Parent", "Nounou"
-
-    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL)
-    private List<Evenement> evenements;
+    private String typeUtilisateur; // PARENT, ADMIN
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Enfant> enfants;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Nounou> nounous;
-
-    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL)
-    private List<RapportMensuel> rapports;
 }

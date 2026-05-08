@@ -13,6 +13,7 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class HeuresSupplementairesResource {
+
     @Inject
     HeuresSupplementairesService heuresSupplementairesService;
 
@@ -24,35 +25,31 @@ public class HeuresSupplementairesResource {
     @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id) {
-        HeuresSupplementaires heuresSupplementaires = heuresSupplementairesService.findById(id);
-        if (heuresSupplementaires == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(heuresSupplementaires).build();
+        return heuresSupplementairesService.findById(id)
+                .map(h -> Response.ok(h).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST
-    public Response create(HeuresSupplementaires heuresSupplementaires) {
-        heuresSupplementairesService.save(heuresSupplementaires);
+    public Response create(HeuresSupplementaires heures) {
+        heuresSupplementairesService.save(heures);
         return Response.status(Response.Status.CREATED).build();
     }
 
     @PUT
     @Path("/{id}")
-    public Response update(@PathParam("id") Long id, HeuresSupplementaires heuresSupplementaires) {
-        HeuresSupplementaires existing = heuresSupplementairesService.findById(id);
-        if (existing == null) {
+    public Response update(@PathParam("id") Long id, HeuresSupplementaires heures) {
+        if (heuresSupplementairesService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        heuresSupplementairesService.update(heuresSupplementaires);
+        heuresSupplementairesService.update(heures);
         return Response.ok().build();
     }
 
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
-        HeuresSupplementaires heuresSupplementaires = heuresSupplementairesService.findById(id);
-        if (heuresSupplementaires == null) {
+        if (heuresSupplementairesService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         heuresSupplementairesService.delete(id);

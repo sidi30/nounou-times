@@ -1,5 +1,7 @@
 package com.nounou.times.resources;
 
+import com.nounou.times.dto.ErrorResponse;
+import com.nounou.times.dto.LoginRequest;
 import com.nounou.times.model.Utilisateur;
 import com.nounou.times.services.UtilisateurService;
 import jakarta.inject.Inject;
@@ -9,11 +11,11 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
-// Resource: UtilisateurResource
 @Path("/utilisateurs")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class UtilisateurResource {
+
     @Inject
     UtilisateurService utilisateurService;
 
@@ -25,11 +27,9 @@ public class UtilisateurResource {
     @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id) {
-        Utilisateur utilisateur = utilisateurService.findById(id);
-        if (utilisateur == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(utilisateur).build();
+        return utilisateurService.findById(id)
+                .map(u -> Response.ok(u).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST
@@ -41,8 +41,7 @@ public class UtilisateurResource {
     @PUT
     @Path("/{id}")
     public Response update(@PathParam("id") Long id, Utilisateur utilisateur) {
-        Utilisateur existing = utilisateurService.findById(id);
-        if (existing == null) {
+        if (utilisateurService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         utilisateurService.update(utilisateur);
@@ -52,63 +51,37 @@ public class UtilisateurResource {
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
+        if (utilisateurService.findById(id).isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
         utilisateurService.delete(id);
         return Response.noContent().build();
     }
 
     @POST
     @Path("/login")
-    public Response login(LoginRequest loginRequest) {
-        Utilisateur utilisateur = utilisateurService.login(loginRequest.getEmail(), loginRequest.getMotDePasse());
-        if (utilisateur == null) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Email ou mot de passe incorrect")
-                    .build();
-        }
-
-        String token = utilisateurService.generateToken(utilisateur);
-        return Response.ok(new LoginResponse(token, utilisateur)).build();
+    public Response login(LoginRequest request) {
+        return utilisateurService.login(request.getEmail(), request.getPassword())
+                .map(u -> {
+                    String token = utilisateurService.generateToken(u);
+                    return Response.ok(new LoginResponse(token, u)).build();
+                })
+                .orElse(Response.status(Response.Status.UNAUTHORIZED)
+                        .entity(new ErrorResponse("Email ou mot de passe incorrect")).build());
     }
 
     @POST
     @Path("/logout")
     public Response logout(@HeaderParam("Authorization") String token) {
-        if (token == null || token.isEmpty()) {
+        if (token == null || token.isBlank()) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Token manquant")
-                    .build();
+                    .entity(new ErrorResponse("Token manquant")).build();
         }
-
         if (utilisateurService.logout(token)) {
-            return Response.ok("Déconnexion réussie").build();
-        } else {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Token invalide")
-                    .build();
+            return Response.ok().build();
         }
-    }
-
-    // Classes DTO pour le login
-    public static class LoginRequest {
-        private String email;
-        private String motDePasse;
-
-        // Getters et setters
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getMotDePasse() {
-            return motDePasse;
-        }
-
-        public void setMotDePasse(String motDePasse) {
-            this.motDePasse = motDePasse;
-        }
+        return Response.status(Response.Status.UNAUTHORIZED)
+                .entity(new ErrorResponse("Token invalide")).build();
     }
 
     public static class LoginResponse {
@@ -120,21 +93,7 @@ public class UtilisateurResource {
             this.utilisateur = utilisateur;
         }
 
-        // Getters et setters
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
-
-        public Utilisateur getUtilisateur() {
-            return utilisateur;
-        }
-
-        public void setUtilisateur(Utilisateur utilisateur) {
-            this.utilisateur = utilisateur;
-        }
+        public String getToken() { return token; }
+        public Utilisateur getUtilisateur() { return utilisateur; }
     }
 }

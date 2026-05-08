@@ -2,11 +2,11 @@ package com.nounou.times.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -20,27 +20,33 @@ public class Absence extends PanacheEntity {
     private LocalDate dateFin;
 
     @Column(nullable = false)
-    private String raison; // e.g., "Congé", "Maladie"
+    private String motif;
 
     @ManyToOne
     @JoinColumn(name = "nounou_id", nullable = false)
     private Nounou nounou;
 
     @ManyToOne
+    @JoinColumn(name = "enfant_id")
+    private Enfant enfant;
+
+    @ManyToOne
     @JoinColumn(name = "remplacant_id")
     private Nounou remplacant;
-    @Column(nullable = false)
-    private String createdDate;
 
-    @Column(nullable = false)
-    private String updatedDate;
+    @Column
+    private LocalDateTime dateDeclaration;
+
+    @Column
+    private LocalDateTime dateModification;
 
     @PrePersist
     public void prePersist() {
-        createdDate = updatedDate = String.valueOf(System.currentTimeMillis());
+        dateDeclaration = LocalDateTime.now();
     }
 
     @PreUpdate
     public void preUpdate() {
-        updatedDate = String.valueOf(System.currentTimeMillis());
-    }}
+        dateModification = LocalDateTime.now();
+    }
+}

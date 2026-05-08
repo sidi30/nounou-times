@@ -1,20 +1,23 @@
 package com.nounou.times.services;
 
+import com.nounou.times.dto.AbsenceRequest;
 import com.nounou.times.model.Absence;
-import com.nounou.times.model.Nounou;
 import com.nounou.times.model.Enfant;
+import com.nounou.times.model.Nounou;
 import com.nounou.times.repository.AbsenceRepository;
-import com.nounou.times.repository.NounouRepository;
 import com.nounou.times.repository.EnfantRepository;
+import com.nounou.times.repository.NounouRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 public class AbsenceService {
+
     @Inject
     AbsenceRepository absenceRepository;
 
@@ -24,99 +27,103 @@ public class AbsenceService {
     @Inject
     EnfantRepository enfantRepository;
 
-    public List<Absence> getAbsences(Long nounouId, LocalDate debut, LocalDate fin) {
+    public Optional<Absence> findById(Long id) {
+        return absenceRepository.findByIdOptional(id);
+    }
+
+    public List<Absence> findAll() {
+        return absenceRepository.listAll();
+    }
+
+    public List<Absence> findByNounou(Long nounouId, LocalDate debut, LocalDate fin) {
         return absenceRepository.findByNounouAndPeriode(nounouId, debut, fin);
     }
 
     @Transactional
-    public Absence declarer(Long nounouId, Long enfantId, LocalDateTime debut, LocalDateTime fin, String motif) {
-        // Vérifier que la nounou existe
-        Nounou nounou = nounouRepository.findById(nounouId);
-        if (nounou == null) {
-            throw new IllegalArgumentException("Nounou non trouvée");
-        }
+    public void save(Absence absence) {
+        absenceRepository.persist(absence);
+    }
 
-        // Vérifier que l'enfant existe et est associé à la nounou
-        Enfant enfant = enfantRepository.findById(enfantId);
-        if (enfant == null) {
-            throw new IllegalArgumentException("Enfant non trouvé");
-        }
-        if (!enfant.getNounou().getId().equals(nounouId)) {
-            throw new IllegalArgumentException("Cet enfant n'est pas associé à cette nounou");
-        }
+    @Transactional
+    public void update(Absence absence) {
+        absenceRepository.getEntityManager().merge(absence);
+    }
 
-        // Vérifier que les dates sont valides
-        if (debut.isAfter(fin)) {
+    @Transactional
+    public void delete(Long id) {
+        absenceRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Absence declarer(Long nounouId, AbsenceRequest request) {
+        Nounou nounou = nounouRepository.findByIdOptional(nounouId)
+                .orElseThrow(() -> new IllegalArgumentException("Nounou non trouvée"));
+
+        if (request.getDateDebut().isAfter(request.getDateFin())) {
             throw new IllegalArgumentException("La date de début doit être antérieure à la date de fin");
         }
 
-        // Vérifier qu'il n'y a pas déjà une absence pour cet enfant sur cette période
-        if (absenceRepository.existsByEnfantAndPeriode(enfantId, debut, fin)) {
-            throw new IllegalArgumentException("Une absence existe déjà pour cet enfant sur cette période");
+        Enfant enfant = null;
+        if (request.getEnfantId() != null) {
+            enfant = enfantRepository.findByIdOptional(request.getEnfantId())
+                    .orElseThrow(() -> new IllegalArgumentException("Enfant non trouvé"));
+            if (enfant.getNounou() == null || !enfant.getNounou().id.equals(nounouId)) {
+                throw new IllegalArgumentException("Cet enfant n'est pas associé à cette nounou");
+            }
+            if (absenceRepository.existsByEnfantAndPeriode(request.getEnfantId(), request.getDateDebut(), request.getDateFin())) {
+                throw new IllegalArgumentException("Une absence existe déjà pour cet enfant sur cette période");
+            }
         }
 
-        // Créer l'absence
         Absence absence = new Absence();
         absence.setNounou(nounou);
         absence.setEnfant(enfant);
-        absence.setDateDebut(debut);
-        absence.setDateFin(fin);
-        absence.setMotif(motif);
-        absence.setDateDeclaration(LocalDateTime.now());
+        absence.setDateDebut(request.getDateDebut());
+        absence.setDateFin(request.getDateFin());
+        absence.setMotif(request.getMotif());
 
-        absenceRepository.save(absence);
+        absenceRepository.persist(absence);
         return absence;
     }
 
     @Transactional
     public void annuler(Long nounouId, Long absenceId) {
-        Absence absence = absenceRepository.findById(absenceId);
-        if (absence == null) {
-            throw new IllegalArgumentException("Absence non trouvée");
-        }
+        Absence absence = absenceRepository.findByIdOptional(absenceId)
+                .orElseThrow(() -> new IllegalArgumentException("Absence non trouvée"));
 
-        // Vérifier que l'absence appartient à la nounou
-        if (!absence.getNounou().getId().equals(nounouId)) {
-            throw new IllegalArgumentException("Cette absence n'appartient pas à cette nounou");
-        }
+        verifierAppartenance(absence, nounouId);
 
-        // Vérifier que l'absence n'est pas déjà passée
-        if (absence.getDateDebut().isBefore(LocalDateTime.now())) {
+        if (absence.getDateDebut().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Impossible d'annuler une absence passée");
         }
 
-        absenceRepository.delete(absenceId);
+        absenceRepository.delete(absence);
     }
 
     @Transactional
-    public Absence modifier(Long nounouId, Long absenceId, LocalDateTime debut, LocalDateTime fin, String motif) {
-        Absence absence = absenceRepository.findById(absenceId);
-        if (absence == null) {
-            throw new IllegalArgumentException("Absence non trouvée");
-        }
+    public Absence modifier(Long nounouId, Long absenceId, AbsenceRequest request) {
+        Absence absence = absenceRepository.findByIdOptional(absenceId)
+                .orElseThrow(() -> new IllegalArgumentException("Absence non trouvée"));
 
-        // Vérifier que l'absence appartient à la nounou
-        if (!absence.getNounou().getId().equals(nounouId)) {
-            throw new IllegalArgumentException("Cette absence n'appartient pas à cette nounou");
-        }
+        verifierAppartenance(absence, nounouId);
 
-        // Vérifier que l'absence n'est pas déjà passée
-        if (absence.getDateDebut().isBefore(LocalDateTime.now())) {
+        if (absence.getDateDebut().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Impossible de modifier une absence passée");
         }
 
-        // Vérifier que les dates sont valides
-        if (debut.isAfter(fin)) {
+        if (request.getDateDebut().isAfter(request.getDateFin())) {
             throw new IllegalArgumentException("La date de début doit être antérieure à la date de fin");
         }
 
-        // Mettre à jour l'absence
-        absence.setDateDebut(debut);
-        absence.setDateFin(fin);
-        absence.setMotif(motif);
-        absence.setDateModification(LocalDateTime.now());
-
-        absenceRepository.update(absence);
+        absence.setDateDebut(request.getDateDebut());
+        absence.setDateFin(request.getDateFin());
+        absence.setMotif(request.getMotif());
         return absence;
+    }
+
+    private void verifierAppartenance(Absence absence, Long nounouId) {
+        if (!absence.getNounou().id.equals(nounouId)) {
+            throw new IllegalArgumentException("Cette absence n'appartient pas à cette nounou");
+        }
     }
 }

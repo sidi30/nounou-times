@@ -9,7 +9,6 @@ public class SignupRequest {
     private String adresse;
     private String pageEmploiId;
 
-    // Getters and Setters
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 

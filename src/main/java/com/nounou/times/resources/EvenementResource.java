@@ -6,13 +6,14 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.List;
 
+import java.util.List;
 
 @Path("/evenements")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EvenementResource {
+
     @Inject
     EvenementService evenementService;
 
@@ -24,11 +25,9 @@ public class EvenementResource {
     @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id) {
-        Evenement evenement = evenementService.findById(id);
-        if (evenement == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(evenement).build();
+        return evenementService.findById(id)
+                .map(e -> Response.ok(e).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST
@@ -40,8 +39,7 @@ public class EvenementResource {
     @PUT
     @Path("/{id}")
     public Response update(@PathParam("id") Long id, Evenement evenement) {
-        Evenement existing = evenementService.findById(id);
-        if (existing == null) {
+        if (evenementService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         evenementService.update(evenement);
@@ -51,8 +49,7 @@ public class EvenementResource {
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
-        Evenement evenement = evenementService.findById(id);
-        if (evenement == null) {
+        if (evenementService.findById(id).isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         evenementService.delete(id);

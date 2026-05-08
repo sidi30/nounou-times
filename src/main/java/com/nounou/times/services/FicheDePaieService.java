@@ -1,21 +1,23 @@
 package com.nounou.times.services;
 
 import com.nounou.times.model.FicheDePaie;
-import com.nounou.times.model.Nounou;
 import com.nounou.times.model.Garde;
+import com.nounou.times.model.Nounou;
 import com.nounou.times.repository.FicheDePaieRepository;
-import com.nounou.times.repository.NounouRepository;
 import com.nounou.times.repository.GardeRepository;
+import com.nounou.times.repository.NounouRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.time.YearMonth;
-import java.time.LocalDate;
-import java.util.List;
 
-// Service: FicheDePaieService
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Optional;
+
 @ApplicationScoped
 public class FicheDePaieService {
+
     @Inject
     FicheDePaieRepository ficheDePaieRepository;
 
@@ -25,43 +27,35 @@ public class FicheDePaieService {
     @Inject
     GardeRepository gardeRepository;
 
-    public FicheDePaie findById(Long id) {
-        return ficheDePaieRepository.findById(id);
+    public Optional<FicheDePaie> findById(Long id) {
+        return ficheDePaieRepository.findByIdOptional(id);
     }
 
     public List<FicheDePaie> findAll() {
-        return ficheDePaieRepository.findAll();
+        return ficheDePaieRepository.listAll();
     }
 
     @Transactional
     public void save(FicheDePaie ficheDePaie) {
-        ficheDePaieRepository.save(ficheDePaie);
+        ficheDePaieRepository.persist(ficheDePaie);
     }
 
     @Transactional
     public void update(FicheDePaie ficheDePaie) {
-        ficheDePaieRepository.update(ficheDePaie);
+        ficheDePaieRepository.getEntityManager().merge(ficheDePaie);
     }
 
     @Transactional
     public void delete(Long id) {
-        ficheDePaieRepository.delete(id);
+        ficheDePaieRepository.deleteById(id);
     }
 
     public FicheDePaie genererOuRecuperer(Long nounouId, YearMonth periode) {
-        Nounou nounou = nounouRepository.findById(nounouId);
-        if (nounou == null) {
-            throw new IllegalArgumentException("Nounou non trouvée");
-        }
+        Nounou nounou = nounouRepository.findByIdOptional(nounouId)
+                .orElseThrow(() -> new IllegalArgumentException("Nounou non trouvée"));
 
-        // Vérifier si une fiche de paie existe déjà pour cette période
-        FicheDePaie ficheExistante = ficheDePaieRepository.findByNounouAndPeriode(nounouId, periode);
-        if (ficheExistante != null) {
-            return ficheExistante;
-        }
-
-        // Sinon, générer une nouvelle fiche de paie
-        return genererFicheDePaie(nounou, periode);
+        return ficheDePaieRepository.findByNounouAndPeriode(nounouId, periode)
+                .orElseGet(() -> genererFicheDePaie(nounou, periode));
     }
 
     @Transactional
@@ -69,57 +63,32 @@ public class FicheDePaieService {
         LocalDate debut = periode.atDay(1);
         LocalDate fin = periode.atEndOfMonth();
 
-        // Récupérer toutes les gardes du mois
-        List<Garde> gardes = gardeRepository.findByNounouAndPeriode(nounou.getId(), debut, fin);
+        List<Garde> gardes = gardeRepository.findByNounouAndPeriode(nounou.id, debut, fin);
 
-        // Calculer le salaire et les différentes composantes
         double tauxHoraire = nounou.getTauxHoraire() != null ? nounou.getTauxHoraire() : 0;
-        double heuresTotales = calculerHeuresTotales(gardes);
+        double heuresTotales = gardes.stream()
+                .mapToDouble(g -> g.getHeures() != null ? g.getHeures() : 0)
+                .sum();
         double salaireBase = heuresTotales * tauxHoraire;
-        double congesPayes = calculerCongesPayes(salaireBase);
-        double indemnitesRepas = calculerIndemnitesRepas(gardes);
-        double chargesSociales = calculerChargesSociales(salaireBase);
+        double congesPayes = salaireBase * 0.10;
+        double indemnitesRepas = gardes.stream().filter(Garde::isRepasInclus).count() * 5.0;
+        double chargesSociales = salaireBase * 0.23;
         double salaireBrut = salaireBase + congesPayes + indemnitesRepas;
         double salaireNet = salaireBrut - chargesSociales;
 
-        // Créer la fiche de paie
-        FicheDePaie ficheDePaie = new FicheDePaie();
-        ficheDePaie.setNounou(nounou);
-        ficheDePaie.setPeriode(periode);
-        ficheDePaie.setDateGeneration(LocalDate.now());
-        ficheDePaie.setHeuresTotales(heuresTotales);
-        ficheDePaie.setSalaireBase(salaireBase);
-        ficheDePaie.setCongesPayes(congesPayes);
-        ficheDePaie.setIndemnitesRepas(indemnitesRepas);
-        ficheDePaie.setChargesSociales(chargesSociales);
-        ficheDePaie.setSalaireBrut(salaireBrut);
-        ficheDePaie.setSalaireNet(salaireNet);
+        FicheDePaie fiche = new FicheDePaie();
+        fiche.setNounou(nounou);
+        fiche.setPeriode(periode);
+        fiche.setDateGeneration(LocalDate.now());
+        fiche.setHeuresTotales(heuresTotales);
+        fiche.setSalaireBase(salaireBase);
+        fiche.setCongesPayes(congesPayes);
+        fiche.setIndemnitesRepas(indemnitesRepas);
+        fiche.setChargesSociales(chargesSociales);
+        fiche.setSalaireBrut(salaireBrut);
+        fiche.setSalaireNet(salaireNet);
 
-        ficheDePaieRepository.save(ficheDePaie);
-        return ficheDePaie;
-    }
-
-    private double calculerHeuresTotales(List<Garde> gardes) {
-        return gardes.stream()
-                    .mapToDouble(garde -> garde.getHeures() != null ? garde.getHeures() : 0)
-                    .sum();
-    }
-
-    private double calculerCongesPayes(double salaireBase) {
-        // 10% du salaire de base selon la convention collective
-        return salaireBase * 0.10;
-    }
-
-    private double calculerIndemnitesRepas(List<Garde> gardes) {
-        // Montant forfaitaire par repas selon la convention collective
-        double montantParRepas = 5.0; // À ajuster selon la convention
-        return gardes.stream()
-                    .filter(garde -> garde.isRepasInclus())
-                    .count() * montantParRepas;
-    }
-
-    private double calculerChargesSociales(double salaireBrut) {
-        // Taux de charges sociales selon la législation en vigueur
-        return salaireBrut * 0.23; // 23% de charges sociales (à ajuster selon la législation)
+        ficheDePaieRepository.persist(fiche);
+        return fiche;
     }
 }

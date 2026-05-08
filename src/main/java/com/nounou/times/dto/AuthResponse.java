@@ -4,17 +4,16 @@ import com.nounou.times.model.Nounou;
 
 public class AuthResponse {
     private String token;
-    private Nounou nounou;
+    private NounouDto nounou;
 
     public AuthResponse(String token, Nounou nounou) {
         this.token = token;
-        this.nounou = nounou;
+        this.nounou = new NounouDto(nounou);
     }
 
-    // Getters and Setters
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
 
-    public Nounou getNounou() { return nounou; }
-    public void setNounou(Nounou nounou) { this.nounou = nounou; }
+    public NounouDto getNounou() { return nounou; }
+    public void setNounou(NounouDto nounou) { this.nounou = nounou; }
 }

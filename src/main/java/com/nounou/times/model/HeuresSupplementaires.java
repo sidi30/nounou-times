@@ -2,7 +2,6 @@ package com.nounou.times.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,5 +16,5 @@ public class HeuresSupplementaires extends Evenement {
     private Duration duree;
 
     @Column(nullable = false)
-    private boolean validation; // True if validated, false otherwise
+    private boolean validation;
 }

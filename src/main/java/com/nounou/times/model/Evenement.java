@@ -2,34 +2,36 @@ package com.nounou.times.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
 public class Evenement extends PanacheEntity {
 
-
-    @Column(nullable = false)
-    private LocalDate date;
+    @Column
+    private LocalDateTime dateHeure;
 
     @Column(nullable = false)
     private String description;
 
     @Column(nullable = false)
-    private String status; // e.g., "En attente", "Accepté", "Refusé"
+    private String statut; // EN_ATTENTE, ACCEPTE, REFUSE, REPROGRAMME
 
     @Column(nullable = false)
-    private String type; // e.g., "Heures supplémentaires", "Retard", "Demande de modification"
+    private String type;
 
     @ManyToOne
-    @JoinColumn(name = "utilisateur_id", nullable = false)
-    private Utilisateur utilisateur;
+    @JoinColumn(name = "nounou_id")
+    private Nounou nounou;
+
+    @ManyToOne
+    @JoinColumn(name = "enfant_id")
+    private Enfant enfant;
 
     @Column
-    private String details; // Additional details about the event
+    private String commentaire;
 }

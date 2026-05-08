@@ -2,12 +2,10 @@ package com.nounou.times.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -15,13 +13,10 @@ import java.time.LocalTime;
 public class Garde extends PanacheEntity {
 
     @Column(nullable = false)
-    private LocalDate date;
+    private LocalDateTime dateDebut;
 
     @Column(nullable = false)
-    private LocalTime heureDebut;
-
-    @Column(nullable = false)
-    private LocalTime heureFin;
+    private LocalDateTime dateFin;
 
     @ManyToOne
     @JoinColumn(name = "enfant_id", nullable = false)
@@ -32,5 +27,17 @@ public class Garde extends PanacheEntity {
     private Nounou nounou;
 
     @Column(nullable = false)
-    private String status; // e.g., "Déposé", "Récupéré"
+    private String statut; // PLANIFIEE, ANNULEE, TERMINEE
+
+    @Column
+    private boolean repasInclus;
+
+    @Column
+    private Double heures;
+
+    @Column
+    private String commentaire;
+
+    @Column
+    private LocalDateTime dateTerminaison;
 }

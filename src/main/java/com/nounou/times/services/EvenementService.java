@@ -1,18 +1,20 @@
 package com.nounou.times.services;
 
-import com.nounou.times.model.Evenement;
-import com.nounou.times.model.Nounou;
-import com.nounou.times.model.Enfant;
-import com.nounou.times.repository.EvenementRepository;
-import com.nounou.times.repository.NounouRepository;
-import com.nounou.times.repository.EnfantRepository;
 import com.nounou.times.dto.ImprevisRequest;
 import com.nounou.times.dto.ReprogrammationRequest;
+import com.nounou.times.model.Enfant;
+import com.nounou.times.model.Evenement;
+import com.nounou.times.model.Nounou;
+import com.nounou.times.repository.EnfantRepository;
+import com.nounou.times.repository.EvenementRepository;
+import com.nounou.times.repository.NounouRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 public class EvenementService {
@@ -26,25 +28,43 @@ public class EvenementService {
     @Inject
     EnfantRepository enfantRepository;
 
+    public Optional<Evenement> findById(Long id) {
+        return evenementRepository.findByIdOptional(id);
+    }
+
+    public List<Evenement> findAll() {
+        return evenementRepository.listAll();
+    }
+
     public List<Evenement> findByNounou(Long nounouId, LocalDate debut, LocalDate fin) {
         return evenementRepository.findByNounouAndDateRange(nounouId, debut, fin);
     }
 
     @Transactional
+    public void save(Evenement evenement) {
+        evenementRepository.persist(evenement);
+    }
+
+    @Transactional
+    public void update(Evenement evenement) {
+        evenementRepository.getEntityManager().merge(evenement);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        evenementRepository.deleteById(id);
+    }
+
+    @Transactional
     public Evenement creerImprevu(Long nounouId, ImprevisRequest request) {
-        Nounou nounou = nounouRepository.findById(nounouId);
-        if (nounou == null) {
-            throw new IllegalArgumentException("Nounou non trouvée");
-        }
+        Nounou nounou = nounouRepository.findByIdOptional(nounouId)
+                .orElseThrow(() -> new IllegalArgumentException("Nounou non trouvée"));
 
         Enfant enfant = null;
         if (request.getEnfantId() != null) {
-            enfant = enfantRepository.findById(request.getEnfantId());
-            if (enfant == null) {
-                throw new IllegalArgumentException("Enfant non trouvé");
-            }
-            // Vérifier que l'enfant est bien associé à la nounou
-            if (!enfant.getNounou().getId().equals(nounouId)) {
+            enfant = enfantRepository.findByIdOptional(request.getEnfantId())
+                    .orElseThrow(() -> new IllegalArgumentException("Enfant non trouvé"));
+            if (enfant.getNounou() == null || !enfant.getNounou().id.equals(nounouId)) {
                 throw new IllegalArgumentException("Cet enfant n'est pas associé à cette nounou");
             }
         }
@@ -57,7 +77,7 @@ public class EvenementService {
         evenement.setType(request.getType());
         evenement.setStatut("EN_ATTENTE");
 
-        evenementRepository.save(evenement);
+        evenementRepository.persist(evenement);
         return evenement;
     }
 
@@ -65,14 +85,12 @@ public class EvenementService {
     public void accepterEvenement(Long nounouId, Long evenementId) {
         Evenement evenement = verifierEvenement(nounouId, evenementId);
         evenement.setStatut("ACCEPTE");
-        evenementRepository.update(evenement);
     }
 
     @Transactional
     public void refuserEvenement(Long nounouId, Long evenementId) {
         Evenement evenement = verifierEvenement(nounouId, evenementId);
         evenement.setStatut("REFUSE");
-        evenementRepository.update(evenement);
     }
 
     @Transactional
@@ -81,15 +99,12 @@ public class EvenementService {
         evenement.setDateHeure(request.getNouvelleDate());
         evenement.setCommentaire(request.getRaison());
         evenement.setStatut("REPROGRAMME");
-        evenementRepository.update(evenement);
     }
 
     private Evenement verifierEvenement(Long nounouId, Long evenementId) {
-        Evenement evenement = evenementRepository.findById(evenementId);
-        if (evenement == null) {
-            throw new IllegalArgumentException("Événement non trouvé");
-        }
-        if (!evenement.getNounou().getId().equals(nounouId)) {
+        Evenement evenement = evenementRepository.findByIdOptional(evenementId)
+                .orElseThrow(() -> new IllegalArgumentException("Événement non trouvé"));
+        if (evenement.getNounou() == null || !evenement.getNounou().id.equals(nounouId)) {
             throw new IllegalArgumentException("Cet événement n'appartient pas à cette nounou");
         }
         return evenement;
